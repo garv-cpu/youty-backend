@@ -17,6 +17,14 @@ export const getDownloadFile = async (req, res) => {
   }
 
   try {
+    if (process.env.YOUTUBE_COOKIE)
+    {
+      playdl.setToken({
+        youtube: {
+          cookie: process.env.YOUTUBE_COOKIE,
+        },
+      })
+    }
     // Get video info
     const videoInfo = await playdl.video_info(videoURL);
     const title = videoInfo.video_details.title.replace(/[^a-zA-Z0-9]/g, "-");
