@@ -22,7 +22,7 @@ if (process.env.YOUTUBE_COOKIE) {
 
 app.use(
     cors({
-      origin: "https://youty-backend.onrender.com", // your frontend domain
+      origin: ["https://youty-backend.onrender.com", "https://youty.vercel.app", "http://localhost:5174"], // your frontend domain
       methods: ["GET", "POST"],
       credentials: true,
     })
