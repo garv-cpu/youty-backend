@@ -1,6 +1,6 @@
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegPath from "ffmpeg-static";
-import ytdl from "@distube/ytdl-core";
+import ytdl from "ytdl-core";
 
 // Set ffmpeg binary path globally
 ffmpeg.setFfmpegPath(ffmpegPath);
