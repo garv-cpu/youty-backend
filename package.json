@@ -28,6 +28,7 @@
     "https": "^1.0.0",
     "miniget": "^4.2.3",
     "play-dl": "^1.9.7",
+    "uuid": "^11.1.0",
     "ytdl-core": "^4.11.5"
   },
   "devDependencies": {
