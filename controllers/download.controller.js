@@ -23,6 +23,7 @@ export const getDownloadFile = async (req, res) => {
     res.setHeader("Content-Disposition", `attachment; filename="${title}.mp3"`);
     res.setHeader("Content-Type", "audio/mpeg");
     res.setHeader("Transfer-Encoding", "chunked");
+    res.flushHeaders(); // ADDED THIS FOR RENDER
 
     const audioStream = ytdl(videoURL, {
       quality: "highestaudio",
