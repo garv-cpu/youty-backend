@@ -1,6 +1,6 @@
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegPath from "ffmpeg-static";
-import ytdl from "ytdl-core";
+import playdl from "play-dl";
 
 // Set ffmpeg binary path globally
 ffmpeg.setFfmpegPath(ffmpegPath);
@@ -12,32 +12,24 @@ export const getDownloadFile = async (req, res) => {
   const videoURL = req.query.url;
   console.log("Attempting to download:", videoURL);
 
-  if (!videoURL || !ytdl.validateURL(videoURL)) {
+  if (!videoURL || !playdl.yt_validate(videoURL)) {
     return res.status(400).json({ error: "Invalid YouTube URL" });
   }
 
   try {
-    const info = await ytdl.getInfo(videoURL);
-    const title = info.videoDetails.title.replace(/[^a-zA-Z0-9]/g, "-");
+    // Get video info
+    const videoInfo = await playdl.video_info(videoURL);
+    const title = videoInfo.video_details.title.replace(/[^a-zA-Z0-9]/g, "-");
 
     res.setHeader("Content-Disposition", `attachment; filename="${title}.mp3"`);
     res.setHeader("Content-Type", "audio/mpeg");
     res.setHeader("Transfer-Encoding", "chunked");
-    res.flushHeaders(); // ADDED THIS FOR RENDER
+    res.flushHeaders();
 
-    const audioStream = ytdl(videoURL, {
-      quality: "highestaudio",
-      filter: "audioonly",
-      requestOptions: {
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/114.0.0.0 Safari/537.36",
-          "Accept-Language": "en-US,en;q=0.9",
-        },
-      },
-    });
+    // Get audio stream (play-dl returns a readable stream URL)
+    const stream = await playdl.stream(videoURL, { quality: 1 }); // 1 = highest quality audio
 
-    ffmpeg(audioStream)
+    ffmpeg(stream.stream)
       .audioBitrate(128)
       .format("mp3")
       .on("error", (err) => {
@@ -61,31 +53,24 @@ export const getDownloadFile = async (req, res) => {
 export const getVideoMetadata = async (req, res) => {
   const videoURL = req.query.url;
 
-  if (!videoURL || !ytdl.validateURL(videoURL)) {
+  if (!videoURL || !playdl.yt_validate(videoURL)) {
     return res.status(400).json({ error: "Invalid YouTube URL" });
   }
 
   try {
-    const info = await ytdl.getInfo(videoURL, {
-      requestOptions: {
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
-        },
-      },
-    });
+    const videoInfo = await playdl.video_info(videoURL);
+    const vd = videoInfo.video_details;
 
-    const { title, description, videoId, author, lengthSeconds } =
-      info.videoDetails;
+    const durationSeconds = parseInt(vd.durationInSec) || 0;
+    const minutes = Math.floor(durationSeconds / 60);
+    const seconds = durationSeconds % 60;
 
     res.json({
-      videoId,
-      title,
-      description,
-      channel: author.name,
-      duration: `${Math.floor(lengthSeconds / 60)}:${
-        lengthSeconds % 60
-      }`.padStart(2, "0"),
+      videoId: vd.id,
+      title: vd.title,
+      description: vd.description,
+      channel: vd.channel.name,
+      duration: `${minutes}:${seconds.toString().padStart(2, "0")}`,
     });
   } catch (error) {
     console.error("Metadata Error: ", error);
