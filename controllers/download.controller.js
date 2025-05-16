@@ -36,7 +36,6 @@ export const getDownloadFile = async (req, res) => {
         },
       },
     });
-    
 
     ffmpeg(audioStream)
       .audioBitrate(128)
@@ -67,7 +66,15 @@ export const getVideoMetadata = async (req, res) => {
   }
 
   try {
-    const info = await ytdl.getInfo(videoURL);
+    const info = await ytdl.getInfo(videoURL, {
+      requestOptions: {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        },
+      },
+    });
+
     const { title, description, videoId, author, lengthSeconds } =
       info.videoDetails;
 
