@@ -28,7 +28,15 @@ export const getDownloadFile = async (req, res) => {
     const audioStream = ytdl(videoURL, {
       quality: "highestaudio",
       filter: "audioonly",
+      requestOptions: {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/114.0.0.0 Safari/537.36",
+          "Accept-Language": "en-US,en;q=0.9",
+        },
+      },
     });
+    
 
     ffmpeg(audioStream)
       .audioBitrate(128)
